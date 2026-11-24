@@ -101,6 +101,26 @@ export const Results = ({
           </div>
         )}
 
+        <div className="row">
+          {loggedIn && (
+            <button className="btn primary" onClick={onShare} disabled={shared}>
+              {shared ? 'Score posted' : 'Comment my score'}
+            </button>
+          )}
+          <button className="btn" onClick={onBuild}>
+            Build a room
+          </button>
+        </div>
+        <div className="row" style={{ margin: '8px 0 12px' }}>
+          <button className="btn" onClick={onReplay}>
+            Replay for fun
+          </button>
+          {onToday && (
+            <button className="btn" onClick={onToday}>
+              Today's room
+            </button>
+          )}
+        </div>
         {rows.length > 0 && (
           <div className="card">
             <h3>
@@ -150,26 +170,6 @@ export const Results = ({
           </p>
         )}
 
-        <div className="row">
-          {loggedIn && (
-            <button className="btn primary" onClick={onShare} disabled={shared}>
-              {shared ? 'Score posted' : 'Comment my score'}
-            </button>
-          )}
-          <button className="btn" onClick={onBuild}>
-            Build a room
-          </button>
-        </div>
-        <div className="row" style={{ marginTop: 8 }}>
-          <button className="btn" onClick={onReplay}>
-            Replay for fun
-          </button>
-          {onToday && (
-            <button className="btn" onClick={onToday}>
-              Today's room
-            </button>
-          )}
-        </div>
         <p className="hint" style={{ marginTop: 10 }}>
           {loggedIn
             ? 'Commenting posts your move count (no spoilers) from your account. '

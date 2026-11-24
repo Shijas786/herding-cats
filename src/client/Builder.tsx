@@ -107,7 +107,7 @@ export const Builder = ({
         </button>
         <h1>
           Build a room
-          <small>Most upvoted room of the week becomes Sunday's daily</small>
+          <small>Top-voted room becomes Sunday's daily</small>
         </h1>
         {[5, 6, 7].map((s) => (
           <button
