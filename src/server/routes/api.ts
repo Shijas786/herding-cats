@@ -12,6 +12,7 @@ import type {
 } from '../../shared/api';
 import {
   type Room,
+  cleanName,
   dateKey,
   parsePath,
   shareText,
@@ -191,7 +192,11 @@ api.post('/share', async (c) => {
   try {
     await reddit.submitComment({
       id: postId,
-      text: shareText(rec.title, result.moves, rec.puzzle.par),
+      text: shareText(
+        cleanName(rec.title.replace(':', ' ')),
+        result.moves,
+        rec.puzzle.par
+      ),
       runAs: 'USER',
     });
     return c.json<ShareResponse>({
@@ -238,10 +243,7 @@ api.post('/room', async (c) => {
       message: 'Log in to publish a room',
     });
   const body: { room?: unknown; name?: unknown } = await c.req.json();
-  const name =
-    typeof body.name === 'string'
-      ? body.name.replace(/\s+/g, ' ').trim().slice(0, 40)
-      : '';
+  const name = typeof body.name === 'string' ? cleanName(body.name) : '';
   if (!name)
     return c.json<RoomResponse>({
       ok: false,

@@ -246,6 +246,14 @@ const ARROW: Record<Dir, string> = { U: '⬆️', D: '⬇️', L: '⬅️', R: '
 export const shareText = (title: string, moves: number, par: number): string =>
   `${title}: herded in ${moves} move${moves === 1 ? '' : 's'} (par ${par}) ${'⭐'.repeat(starsFor(moves, par))}`;
 
+/** Room names are shown in titles and comments: keep letters, digits and plain punctuation only. */
+export const cleanName = (name: string): string =>
+  name
+    .replace(/[^\p{L}\p{N} '!?,-]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 40);
+
 export const pathEmoji = (path: readonly Dir[]): string =>
   path.map((d) => ARROW[d]).join('');
 
