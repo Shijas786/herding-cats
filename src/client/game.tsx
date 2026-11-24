@@ -121,6 +121,8 @@ const Game = ({ init }: { init: InitResponse }) => {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Shortcuts belong to the board only: never while building a room or reading results.
+      if (building || sheet) return;
       const dir = KEYS[e.key];
       if (dir) {
         e.preventDefault();
