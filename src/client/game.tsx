@@ -37,6 +37,7 @@ const same = (a: readonly number[], b: readonly number[]) =>
 const Game = ({ init }: { init: InitResponse }) => {
   const room = init.puzzle;
   const localKey = `hc:result:${init.postId}`;
+  const guest = init.username === null;
   const [history, setHistory] = useState<number[][]>(() => {
     // A finished player comes back to their napping cats.
     const path = init.result ? parsePath(init.result.path) : null;
@@ -50,7 +51,8 @@ const Game = ({ init }: { init: InitResponse }) => {
   );
   const [result, setResult] = useState<Result | null>(() => {
     if (init.result) return init.result;
-    const saved = readStored(localKey);
+    // Signed-in players get their result from the server; only guests keep one locally.
+    const saved = guest ? readStored(localKey) : null;
     return saved ? { moves: saved.length, path: saved } : null;
   });
   const [stats, setStats] = useState<Stats>(init.stats);
@@ -71,16 +73,20 @@ const Game = ({ init }: { init: InitResponse }) => {
       const text = full.join('');
       try {
         const res = await call<SolveResponse>('/api/solve', { path: text });
-        setResult(res.result);
+        // The server keeps a signed-in player's first solve; guests keep theirs here.
+        const kept = guest
+          ? (readStored(localKey) ?? res.result.path)
+          : res.result.path;
+        setResult({ moves: kept.length, path: kept });
         setStats(res.stats);
         setStreak(res.streak);
-        localStorage.setItem(localKey, res.result.path);
+        if (guest) writeStored(localKey, kept);
       } catch {
         setResult((r) => r ?? { moves: full.length, path: text });
       }
       setTimeout(() => setSheet(true), 650);
     },
-    [localKey]
+    [guest, localKey]
   );
 
   const move = useCallback(
