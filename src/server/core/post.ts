@@ -27,6 +27,7 @@ export const keys = {
   histogram: (postId: string) => `histogram:${postId}`,
   user: (name: string) => `user:${name}`,
   week: (monday: string) => `week:${monday}`,
+  locks: 'locks:daily',
 };
 
 /** Reddit comment links take the bare post id, not the t3_ fullname. */
@@ -123,15 +124,31 @@ export const ensureDailyPost = async (): Promise<{
         puzzle: dailyPuzzle(date),
       };
 
-  const post = await reddit.submitCustomPost({
-    title: rec.title,
-    subredditName: context.subredditName,
-    entry: 'default',
-    textFallback: {
-      text: `${rec.title}. Tilt the room so every cat slides onto a cushion. Par is ${rec.puzzle.par} moves.`,
-    },
-  });
-  await savePost(post.id, rec);
-  await redis.set(keys.daily(date), post.id);
-  return { postId: post.id, created: true };
+  // The scheduler, the menu item and the install trigger can overlap: only one may post.
+  if ((await redis.hSetNX(keys.locks, date, '1')) !== 1) {
+    for (let i = 0; i < 20; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      const postId = await redis.get(keys.daily(date));
+      if (postId) return { postId, created: false };
+    }
+    throw new Error(
+      `Daily room for ${date} is being posted by another request`
+    );
+  }
+  try {
+    const post = await reddit.submitCustomPost({
+      title: rec.title,
+      subredditName: context.subredditName,
+      entry: 'default',
+      textFallback: {
+        text: `${rec.title}. Tilt the room so every cat slides onto a cushion. Par is ${rec.puzzle.par} moves.`,
+      },
+    });
+    await savePost(post.id, rec);
+    await redis.set(keys.daily(date), post.id);
+    return { postId: post.id, created: true };
+  } catch (error) {
+    await redis.hDel(keys.locks, [date]);
+    throw error;
+  }
 };
