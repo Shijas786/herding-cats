@@ -193,7 +193,7 @@ api.post('/share', async (c) => {
     await reddit.submitComment({
       id: postId,
       text: shareText(
-        cleanName(rec.title.replace(':', ' ')),
+        rec.kind === 'community' ? cleanName(rec.title) : rec.title,
         result.moves,
         rec.puzzle.par
       ),
