@@ -34,6 +34,8 @@ export const keys = {
 export const postUrl = (postId: string): string =>
   `https://reddit.com/r/${context.subredditName}/comments/${postId.replace(/^t3_/, '')}`;
 
+const LOCK_STALE_MS = 120000;
+
 export const mondayOf = (date: string): string =>
   shiftDate(date, -weekdayIndex(date));
 
@@ -125,15 +127,20 @@ export const ensureDailyPost = async (): Promise<{
       };
 
   // The scheduler, the menu item and the install trigger can overlap: only one may post.
-  if ((await redis.hSetNX(keys.locks, date, '1')) !== 1) {
+  if ((await redis.hSetNX(keys.locks, date, String(Date.now()))) !== 1) {
     for (let i = 0; i < 20; i++) {
       await new Promise((resolve) => setTimeout(resolve, 250));
       const postId = await redis.get(keys.daily(date));
       if (postId) return { postId, created: false };
     }
-    throw new Error(
-      `Daily room for ${date} is being posted by another request`
-    );
+    // A holder that died before storing the post id must not block the day forever.
+    const heldSince = Number((await redis.hGet(keys.locks, date)) ?? 0);
+    if (Date.now() - heldSince < LOCK_STALE_MS) {
+      throw new Error(
+        `Daily room for ${date} is being posted by another request`
+      );
+    }
+    await redis.hSet(keys.locks, { [date]: String(Date.now()) });
   }
   try {
     const post = await reddit.submitCustomPost({
