@@ -15,6 +15,7 @@ import {
   cleanName,
   dateKey,
   parsePath,
+  rankFor,
   shareText,
   shiftDate,
   solve,
@@ -209,6 +210,32 @@ api.post('/share', async (c) => {
     return c.json<ShareResponse>({
       ok: false,
       message: 'Could not post your comment',
+    });
+  }
+});
+
+/** Sets the player's rank and streak as their subreddit flair. Only ever called from an explicit button. */
+api.post('/flair', async (c) => {
+  const username = await reddit.getCurrentUsername();
+  if (!username)
+    return c.json<ShareResponse>({
+      ok: false,
+      message: 'Log in to wear flair',
+    });
+  const streak = await getStreak(username, dateKey(Date.now()));
+  const text = `${rankFor(streak.solved).title} · ${streak.current} day streak`;
+  try {
+    await reddit.setUserFlair({
+      subredditName: context.subredditName,
+      username,
+      text,
+    });
+    return c.json<ShareResponse>({ ok: true, message: `Flair set: ${text}` });
+  } catch (error) {
+    console.error('flair failed:', error);
+    return c.json<ShareResponse>({
+      ok: false,
+      message: 'Could not set your flair here',
     });
   }
 });

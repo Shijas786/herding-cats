@@ -18,7 +18,15 @@ import { Results } from './Results';
 import { Flame } from './icons';
 import { ApiFailure, call } from './api';
 import { readStored, writeStored } from './storage';
-import { isMuted, playBump, playSlide, playWin, setMuted } from './sound';
+import {
+  isMuted,
+  playBump,
+  playNap,
+  playSlide,
+  playWin,
+  setMuted,
+} from './sound';
+import { Confetti } from './art';
 
 const KEYS: Record<string, Dir> = {
   ArrowUp: 'U',
@@ -66,6 +74,8 @@ const Game = ({ init }: { init: InitResponse }) => {
   const [building, setBuilding] = useState(false);
   const [shake, setShake] = useState<Dir | null>(null);
   const [muted, setMute] = useState(isMuted);
+  const [lastDir, setLastDir] = useState<Dir | null>(null);
+  const [fresh, setFresh] = useState(false);
   const drag = useRef<{ x: number; y: number } | null>(null);
 
   const cats = history[history.length - 1] ?? room.cats;
@@ -73,7 +83,8 @@ const Game = ({ init }: { init: InitResponse }) => {
 
   const finish = useCallback(
     async (full: Dir[]) => {
-      playWin();
+      playWin(room.cats.length);
+      setFresh(true);
       const text = full.join('');
       try {
         const res = await call<SolveResponse>('/api/solve', { path: text });
@@ -90,7 +101,7 @@ const Game = ({ init }: { init: InitResponse }) => {
       }
       setTimeout(() => setSheet(true), 650);
     },
-    [guest, localKey]
+    [guest, localKey, room.cats.length]
   );
 
   const move = useCallback(
@@ -103,7 +114,10 @@ const Game = ({ init }: { init: InitResponse }) => {
         setTimeout(() => setShake(null), 180);
         return;
       }
-      playSlide();
+      playSlide(next.flatMap((c, i) => (c === cats[i] ? [] : [i])));
+      if (next.some((c, i) => c !== cats[i] && room.cushions.includes(c)))
+        playNap();
+      setLastDir(dir);
       const full = [...path, dir];
       setHistory((h) => [...h, next]);
       setPath(full);
@@ -114,10 +128,13 @@ const Game = ({ init }: { init: InitResponse }) => {
 
   const undo = () => {
     if (solved || history.length < 2) return;
+    setLastDir(null);
     setHistory((h) => h.slice(0, -1));
     setPath((p) => p.slice(0, -1));
   };
   const reset = () => {
+    setLastDir(null);
+    setFresh(false);
     setHistory([room.cats]);
     setPath([]);
     setSheet(false);
@@ -136,6 +153,17 @@ const Game = ({ init }: { init: InitResponse }) => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
+
+  const flair = async () => {
+    try {
+      const res = await call<ShareResponse>('/api/flair', {});
+      showToast(res.message);
+    } catch (error) {
+      showToast(
+        error instanceof ApiFailure ? error.message : 'Could not set your flair'
+      );
+    }
+  };
 
   const share = async () => {
     try {
@@ -217,7 +245,18 @@ const Game = ({ init }: { init: InitResponse }) => {
           );
         }}
       >
-        <Board room={room} cats={cats} shake={shake} />
+        <Board
+          room={room}
+          cats={cats}
+          prev={history.length > 1 ? history[history.length - 2] : undefined}
+          lastDir={lastDir}
+          shake={shake}
+        >
+          {moves === 0 && !result && (
+            <div className="swipe-hint" aria-hidden="true" />
+          )}
+          {fresh && <Confetti />}
+        </Board>
       </div>
       <p className="hint">
         {solved
@@ -301,6 +340,7 @@ const Game = ({ init }: { init: InitResponse }) => {
                   )
               : null
           }
+          onFlair={() => void flair()}
           onClose={() => setSheet(false)}
         />
       )}

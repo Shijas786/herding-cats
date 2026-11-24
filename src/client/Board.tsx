@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Room } from '../shared/game';
+import { Bed, Furniture } from './art';
 
 const FUR = [
   { coat: '#f29a3f', dark: '#c96f1c', belly: '#ffe3c2' },
@@ -67,12 +68,12 @@ export const Cat = ({ index, asleep }: { index: number; asleep: boolean }) => {
           />
         </>
       ) : (
-        <>
+        <g className="eyes" style={{ animationDelay: `${index * 1.3}s` }}>
           <ellipse cx="35" cy="52" rx="6" ry="7.5" fill={ink} />
           <ellipse cx="65" cy="52" rx="6" ry="7.5" fill={ink} />
           <circle cx="37" cy="49" r="2" fill="#fff" />
           <circle cx="67" cy="49" r="2" fill="#fff" />
-        </>
+        </g>
       )}
       <path d="M46 62 L54 62 L50 67 Z" fill="#e8798c" />
       <path
@@ -101,12 +102,23 @@ const place = (room: Room, pos: number): CSSProperties => ({
 type BoardProps = {
   room: Room;
   cats: readonly number[];
+  /** Where the cats were before the last tilt, to animate only the ones that moved. */
+  prev?: readonly number[] | undefined;
+  lastDir?: string | null | undefined;
   onCell?: (cell: number) => void;
   children?: ReactNode;
   shake?: string | null;
 };
 
-export const Board = ({ room, cats, onCell, children, shake }: BoardProps) => {
+export const Board = ({
+  room,
+  cats,
+  prev,
+  lastDir,
+  onCell,
+  children,
+  shake,
+}: BoardProps) => {
   const cushions = new Set(room.cushions);
   const cells = Array.from({ length: room.w * room.h }, (_, i) => i);
   return (
@@ -134,20 +146,29 @@ export const Board = ({ room, cats, onCell, children, shake }: BoardProps) => {
       </div>
       {room.cushions.map((c) => (
         <div key={`c${c}`} className="piece" style={place(room, c)}>
-          <div className="cushion" />
+          <Bed />
         </div>
       ))}
       {room.walls.map((c) => (
         <div key={`w${c}`} className="piece" style={place(room, c)}>
-          <div className={`crate ${c % 3 === 0 ? 'plant' : ''}`} />
+          <Furniture cell={c} />
         </div>
       ))}
-      {cats.map((c, i) => (
-        <div key={`k${i}`} className="piece cat" style={place(room, c)}>
-          <Cat index={i} asleep={cushions.has(c)} />
-          {cushions.has(c) && <span className="zzz">z</span>}
-        </div>
-      ))}
+      {cats.map((c, i) => {
+        const asleep = cushions.has(c);
+        const moved = prev !== undefined && prev[i] !== c;
+        return (
+          <div key={`k${i}`} className="piece cat" style={place(room, c)}>
+            <div
+              key={moved ? `${prev[i]}-${c}` : 'still'}
+              className={`cat-inner ${asleep ? 'asleep' : ''} ${moved && lastDir ? `go-${lastDir}` : ''}`}
+            >
+              <Cat index={i} asleep={asleep} />
+            </div>
+            {asleep && <span className="zzz">z</span>}
+          </div>
+        );
+      })}
       {children}
     </div>
   );

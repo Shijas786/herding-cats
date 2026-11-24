@@ -1,3 +1,5 @@
+@import '@fontsource/fredoka/500.css';
+@import '@fontsource/fredoka/700.css';
 :root {
   --bg: #fdf6ec;
   --panel: #ffffff;
@@ -43,6 +45,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family:
+    'Fredoka',
     ui-rounded,
     'SF Pro Rounded',
     'Nunito',
@@ -627,5 +630,282 @@ button:disabled {
   * {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* ---- living-room art direction ---- */
+:root {
+  --floor: #e9bf85;
+  --plank: rgba(74, 47, 29, 0.16);
+  --rug: rgba(255, 255, 255, 0.16);
+  --frame: #4a2f1d;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --floor: #4b3a5c;
+    --plank: rgba(0, 0, 0, 0.28);
+    --rug: rgba(255, 255, 255, 0.05);
+    --frame: #120d18;
+  }
+}
+.board {
+  background-color: var(--floor);
+  background-image:
+    repeating-linear-gradient(90deg, var(--plank) 0 2px, transparent 2px 9%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 31%,
+      var(--plank) 31% calc(31% + 2px),
+      transparent calc(31% + 2px) 50%
+    );
+  border-color: var(--frame);
+  border-width: 7px;
+  border-radius: 18px;
+}
+.tile,
+.tile.dark {
+  background: transparent;
+}
+.tile.dark {
+  background: var(--rug);
+}
+button.tile {
+  box-shadow: inset 0 0 0 1px var(--plank);
+}
+.art {
+  width: 96%;
+  height: 96%;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.22));
+}
+.art.bed {
+  width: 90%;
+  height: 90%;
+}
+.cat-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cat-inner.go-L,
+.cat-inner.go-R {
+  animation: stretch-x 260ms ease-out;
+}
+.cat-inner.go-U,
+.cat-inner.go-D {
+  animation: stretch-y 260ms ease-out;
+}
+@keyframes stretch-x {
+  0% {
+    transform: scale(1.28, 0.78);
+  }
+  60% {
+    transform: scale(0.86, 1.12);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes stretch-y {
+  0% {
+    transform: scale(0.78, 1.28);
+  }
+  60% {
+    transform: scale(1.12, 0.86);
+  }
+  100% {
+    transform: none;
+  }
+}
+.cat-inner.asleep {
+  animation: breathe 2.6s ease-in-out infinite;
+}
+@keyframes breathe {
+  50% {
+    transform: scale(1.05, 0.95) translateY(3%);
+  }
+}
+.eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 4.6s infinite;
+}
+@keyframes blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+
+.swipe-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 0 3px var(--frame);
+  pointer-events: none;
+  z-index: 3;
+  animation: swipe 1.8s ease-in-out infinite;
+}
+@keyframes swipe {
+  0% {
+    transform: translateX(-70px) scale(0.8);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(70px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(80px) scale(1);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 4;
+}
+.confetti i {
+  position: absolute;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  animation: fall 1.4s cubic-bezier(0.3, 0.6, 0.6, 1) forwards;
+}
+.confetti i.paw {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(540deg);
+    opacity: 0.6;
+  }
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.9;
+  font-weight: 700;
+  color: var(--accent);
+  transform: rotate(-3deg);
+}
+.logo-top {
+  font-size: 1.05rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.logo-main {
+  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  text-shadow: 0 3px 0 var(--frame);
+  -webkit-text-stroke: 3px var(--frame);
+  paint-order: stroke fill;
+}
+.logo-cat {
+  width: 0.82em;
+  height: 0.82em;
+  margin: 0 -0.02em;
+  animation: bob 2.4s ease-in-out infinite;
+}
+@keyframes bob {
+  50% {
+    transform: translateY(-8%) rotate(4deg);
+  }
+}
+.splash .btn.primary {
+  animation: nudge 2.2s ease-in-out infinite;
+}
+@keyframes nudge {
+  0%,
+  80%,
+  100% {
+    transform: none;
+  }
+  88% {
+    transform: scale(1.06) rotate(-1.5deg);
+  }
+  94% {
+    transform: scale(1.03) rotate(1.5deg);
+  }
+}
+
+.card.rank {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.card.rank b {
+  display: block;
+  font-size: 1.1rem;
+}
+.card.rank span {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.btn,
+.dpad button,
+.chip,
+.icon-btn,
+.tools button {
+  font-family: inherit;
+  font-weight: 700;
+}
+
+@media (max-width: 420px) {
+  .splash {
+    gap: 6px;
+    padding: 10px;
+  }
+  .splash .mini {
+    height: 44%;
+    order: 2;
+  }
+  .splash .info {
+    display: contents;
+  }
+  .splash .logo {
+    order: 1;
+  }
+  .splash .logo-main {
+    font-size: 2.3rem;
+  }
+  .splash h1 {
+    order: 3;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+  .splash .info > p {
+    order: 5;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+  .splash .info > p.sub2 {
+    display: none;
+  }
+  .splash .btn.primary {
+    order: 4;
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { InitResponse, Result, Stats, Streak } from '../shared/api';
-import { starsFor } from '../shared/game';
+import { rankFor, starsFor } from '../shared/game';
 import { Flame, Star } from './icons';
 
 const untilNextRoom = (): string => {
@@ -27,6 +27,7 @@ type Props = {
   onBuild: () => void;
   onReplay: () => void;
   onToday: (() => void) | null;
+  onFlair: () => void;
   onClose: () => void;
 };
 
@@ -40,6 +41,7 @@ export const Results = ({
   onBuild,
   onReplay,
   onToday,
+  onFlair,
   onClose,
 }: Props) => {
   const [clock, setClock] = useState(untilNextRoom);
@@ -58,6 +60,7 @@ export const Results = ({
     .filter((r) => r.moves > result.moves)
     .reduce((a, r) => a + r.n, 0);
   const loggedIn = init.username !== null;
+  const rank = rankFor(streak.solved);
 
   return (
     <div className="sheet-wrap" onClick={onClose}>
@@ -121,6 +124,25 @@ export const Results = ({
             </button>
           )}
         </div>
+        {loggedIn && (
+          <div className="card rank">
+            <div>
+              <h3>Your rank</h3>
+              <b>{rank.title}</b>
+              {rank.next && (
+                <span>
+                  {rank.next.at - streak.solved} more room
+                  {rank.next.at - streak.solved === 1 ? '' : 's'} to{' '}
+                  {rank.next.title}
+                </span>
+              )}
+            </div>
+            <button className="btn" onClick={onFlair}>
+              Wear as flair
+            </button>
+          </div>
+        )}
+
         {rows.length > 0 && (
           <div className="card">
             <h3>

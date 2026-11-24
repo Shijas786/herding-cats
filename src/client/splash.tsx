@@ -6,6 +6,7 @@ import { requestExpandedMode } from '@devvit/web/client';
 import type { InitResponse } from '../shared/api';
 import { starsFor } from '../shared/game';
 import { Flame, Paw, Star } from './icons';
+import { Logo } from './art';
 import { Board } from './Board';
 import { ApiFailure, call } from './api';
 
@@ -31,8 +32,9 @@ export const Splash = () => {
         <Board room={puzzle} cats={puzzle.cats} />
       </div>
       <div className="info">
-        <h1>{init.title}</h1>
-        <p>{init.subtitle}</p>
+        <Logo />
+        <h1>{init.title.replace(/^Herding Cats /, '')}</h1>
+        <p className="sub2">{init.subtitle}</p>
         <p>
           {result ? (
             <>
