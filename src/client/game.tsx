@@ -11,7 +11,7 @@ import type {
   Stats,
   Streak,
 } from '../shared/api';
-import { type Dir, isSolved, parsePath, tilt } from '../shared/game';
+import { type Dir, isSolved, parsePath, tilt, verify } from '../shared/game';
 import { Board } from './Board';
 import { Builder } from './Builder';
 import { Results } from './Results';
@@ -38,26 +38,30 @@ const Game = ({ init }: { init: InitResponse }) => {
   const room = init.puzzle;
   const localKey = `hc:result:${init.postId}`;
   const guest = init.username === null;
+  // Signed-in players get their result from the server; guests keep theirs in this browser.
+  // Either way a finished player comes back to their napping cats and the results.
+  const [first] = useState<Result | null>(() => {
+    if (init.result) return init.result;
+    const saved = guest ? readStored(localKey) : null;
+    const valid = saved ? parsePath(saved) : null;
+    return saved && valid && verify(room, valid)
+      ? { moves: saved.length, path: saved }
+      : null;
+  });
   const [history, setHistory] = useState<number[][]>(() => {
-    // A finished player comes back to their napping cats.
-    const path = init.result ? parsePath(init.result.path) : null;
-    if (!path) return [room.cats];
     const h = [room.cats];
-    for (const d of path) h.push(tilt(room, h[h.length - 1] ?? room.cats, d));
+    for (const d of (first && parsePath(first.path)) ?? []) {
+      h.push(tilt(room, h[h.length - 1] ?? room.cats, d));
+    }
     return h;
   });
-  const [path, setPath] = useState<Dir[]>(() =>
-    init.result ? (parsePath(init.result.path) ?? []) : []
+  const [path, setPath] = useState<Dir[]>(
+    () => (first && parsePath(first.path)) ?? []
   );
-  const [result, setResult] = useState<Result | null>(() => {
-    if (init.result) return init.result;
-    // Signed-in players get their result from the server; only guests keep one locally.
-    const saved = guest ? readStored(localKey) : null;
-    return saved ? { moves: saved.length, path: saved } : null;
-  });
+  const [result, setResult] = useState<Result | null>(first);
   const [stats, setStats] = useState<Stats>(init.stats);
   const [streak, setStreak] = useState<Streak>(init.streak);
-  const [sheet, setSheet] = useState(init.result !== null);
+  const [sheet, setSheet] = useState(first !== null);
   const [shared, setShared] = useState(false);
   const [building, setBuilding] = useState(false);
   const [shake, setShake] = useState<Dir | null>(null);
