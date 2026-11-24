@@ -17,6 +17,7 @@ import { Builder } from './Builder';
 import { Results } from './Results';
 import { Flame } from './icons';
 import { ApiFailure, call } from './api';
+import { readStored, writeStored } from './storage';
 import { isMuted, playBump, playSlide, playWin, setMuted } from './sound';
 
 const KEYS: Record<string, Dir> = {
@@ -49,7 +50,7 @@ const Game = ({ init }: { init: InitResponse }) => {
   );
   const [result, setResult] = useState<Result | null>(() => {
     if (init.result) return init.result;
-    const saved = localStorage.getItem(localKey);
+    const saved = readStored(localKey);
     return saved ? { moves: saved.length, path: saved } : null;
   });
   const [stats, setStats] = useState<Stats>(init.stats);

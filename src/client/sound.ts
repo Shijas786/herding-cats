@@ -1,10 +1,12 @@
+import { readStored, writeStored } from './storage';
+
 let ctx: AudioContext | null = null;
-let muted = localStorage.getItem('hc:muted') === '1';
+let muted = readStored('hc:muted') === '1';
 
 export const isMuted = (): boolean => muted;
 export const setMuted = (m: boolean): void => {
   muted = m;
-  localStorage.setItem('hc:muted', m ? '1' : '0');
+  writeStored('hc:muted', m ? '1' : '0');
 };
 
 const tone = (
