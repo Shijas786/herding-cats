@@ -29,6 +29,10 @@ export const keys = {
   week: (monday: string) => `week:${monday}`,
 };
 
+/** Reddit comment links take the bare post id, not the t3_ fullname. */
+export const postUrl = (postId: string): string =>
+  `https://reddit.com/r/${context.subredditName}/comments/${postId.replace(/^t3_/, '')}`;
+
 export const mondayOf = (date: string): string =>
   shiftDate(date, -weekdayIndex(date));
 

@@ -20,7 +20,7 @@ import {
   validateRoom,
   verify,
 } from '../../shared/game';
-import { keys, loadPost, mondayOf, savePost } from '../core/post';
+import { keys, loadPost, mondayOf, postUrl, savePost } from '../core/post';
 
 export const api = new Hono();
 
@@ -308,7 +308,7 @@ api.post('/room', async (c) => {
     });
     return c.json<RoomResponse>({
       ok: true,
-      url: `https://reddit.com/r/${context.subredditName}/comments/${post.id}`,
+      url: postUrl(post.id),
       par: best.length,
     });
   } catch (error) {
