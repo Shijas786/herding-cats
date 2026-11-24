@@ -249,8 +249,10 @@ export const shareText = (title: string, moves: number, par: number): string =>
 /** Room names are shown in titles and comments: keep letters, digits and plain punctuation only. */
 export const cleanName = (name: string): string =>
   name
-    .replace(/[^\p{L}\p{N} '!?,-]/gu, '')
-    .replace(/\s+/g, ' ')
+    .normalize('NFC')
+    .replace(/\s+/gu, ' ')
+    .replace(/[^\p{L}\p{M}\p{N} '!?,-]/gu, '')
+    .replace(/ +/g, ' ')
     .trim()
     .slice(0, 40);
 

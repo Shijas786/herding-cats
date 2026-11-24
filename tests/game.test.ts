@@ -8,6 +8,7 @@ import {
   solve,
   tilt,
   validateRoom,
+  cleanName,
   verify,
   weekdayIndex,
   dayNumber,
@@ -49,4 +50,9 @@ test('generation is fast enough for a request', () => {
   const t = Date.now();
   for (let i = 0; i < 5; i++) generate(`speed${i}`, TIERS[6]!);
   assert.ok(Date.now() - t < 5000);
+});
+
+test('room names lose markup but keep accents and word breaks', () => {
+  assert.equal(cleanName('[x](http://a.b) **hi**'), 'xhttpab hi');
+  assert.equal(cleanName('Cafe\u0301\u00a0nap'), 'Caf\u00e9 nap');
 });
