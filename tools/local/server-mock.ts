@@ -68,6 +68,9 @@ export const reddit = {
     console.log('[mock] comment:', o.text);
     return { id: 't1_x' };
   },
+  setUserFlair: async (o: { text: string }) => {
+    console.log('[mock] flair:', o.text);
+  },
   getPostById: async () => ({
     score: Math.floor(Math.random() * 50),
     isRemoved: () => false,

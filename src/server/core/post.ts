@@ -5,6 +5,7 @@ import {
   dailyPuzzle,
   dateKey,
   dayNumber,
+  roomName,
   shiftDate,
   tierFor,
   weekdayIndex,
@@ -119,8 +120,8 @@ export const ensureDailyPost = async (): Promise<{
       }
     : {
         kind: 'daily',
-        title: `Herding Cats #${n}: ${tier.label}`,
-        subtitle: `${tier.label} room, par ${tier.par}`,
+        title: `Herding Cats #${n}: ${roomName(date)}`,
+        subtitle: `${tier.label} · ${tier.size}×${tier.size} · par ${tier.par}`,
         author: null,
         date,
         puzzle: dailyPuzzle(date),

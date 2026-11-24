@@ -234,6 +234,64 @@ export const generate = (seedText: string, tier: Tier): Puzzle => {
   throw new Error('Could not generate a room');
 };
 
+const ADJ = [
+  'Sunbeam',
+  'Midnight',
+  'Cardboard',
+  'Laser Pointer',
+  'Catnip',
+  'Zoomies',
+  'Windowsill',
+  'Tuna',
+  'Yarn',
+  'Keyboard',
+  'Curtain',
+  'Hairball',
+  'Biscuit',
+  'Vacuum',
+];
+const NOUN = [
+  'Standoff',
+  'Shuffle',
+  'Conspiracy',
+  'Rodeo',
+  'Summit',
+  'Incident',
+  'Stampede',
+  'Tango',
+  'Heist',
+  'Scramble',
+  'Uprising',
+  'Nap Time',
+];
+
+/** A silly, stable name for each day's room. */
+export const roomName = (key: string): string => {
+  const rng = mulberry32(hash(`name:${key}`));
+  return `The ${pick(rng, ADJ) ?? 'Sunbeam'} ${pick(rng, NOUN) ?? 'Standoff'}`;
+};
+
+export const RANKS: readonly { at: number; title: string }[] = [
+  { at: 0, title: 'Kitten Sitter' },
+  { at: 3, title: 'Cat Wrangler' },
+  { at: 7, title: 'Whisker Whisperer' },
+  { at: 14, title: 'Clowder Captain' },
+  { at: 30, title: 'Grand Herder' },
+  { at: 60, title: 'Cat Herding Legend' },
+];
+
+export const rankFor = (
+  solved: number
+): { title: string; next: { at: number; title: string } | null } => {
+  let title = RANKS[0]?.title ?? 'Kitten Sitter';
+  let next: { at: number; title: string } | null = null;
+  for (const r of RANKS) {
+    if (solved >= r.at) title = r.title;
+    else if (!next) next = r;
+  }
+  return { title, next };
+};
+
 export const dailyPuzzle = (key: string): Puzzle =>
   generate(`herding-cats:${key}`, tierFor(key));
 
